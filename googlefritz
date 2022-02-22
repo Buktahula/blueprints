@@ -10,7 +10,7 @@ blueprint:
         target:
           entity:
             domain: media_player
-            integration: Google Cast
+            #integration: Google Cast
     phone_entity:
       name: Phone sensor
       description: This sensor must be from the fritzbox_callmonitor integration.
