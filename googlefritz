@@ -1,0 +1,74 @@
+blueprint:
+  name: Call Notification
+  description: Send an announcement/tts via Alexa when somebody calls the landline
+  domain: automation
+  input:
+    notify_entities:
+      name: Entities to notify
+      description: These must be media_player entities from the alexa_media custom integration.
+      selector:
+        target:
+          entity:
+            domain: media_player
+            integration: alexa_media
+    phone_entity:
+      name: Phone sensor
+      description: This sensor must be from the fritzbox_callmonitor integration.
+      selector:
+        entity:
+          #integration: fritzbox_callmonitor
+          domain: sensor
+    announcement_switch:
+      name: Use Announcement instead of TTS
+      description: Announcements begin with a two-tone melody and will be silence when DnD mode is on. TTS on the other hand will not be impacted by DnD mode and will start immediately without the melody before.
+      selector:
+        boolean:
+      default: false
+    message_prefix:
+      name: Message Prefix
+      description: Message that will be appended before the name of the caller
+      default: "Incoming call from: "
+    message_suffix:
+      name: Message Suffix
+      description: Message that will be appended after the name of the caller
+      default: ""
+    message_unknown:
+      name: Unknown text
+      description: This is the text that will be said when no name is available (supressed or not in address book)
+      default: "Unknown"
+    more_action:
+      name: More action
+      description: If you want Home Assistant to do something else, you can define a custom action here. This is optional.
+      default: []
+      selector:
+        action:
+
+variables:
+  # This is the state of the person when it's in this zone.
+  announcement_switch: !input announcement_switch
+  notify_entities: !input notify_entities
+  phone_entity: !input phone_entity
+  message_prefix: !input message_prefix
+  message_suffix: !input message_suffix
+  message_unknown: !input message_unknown
+
+trigger:
+  entity_id: !input phone_entity
+  platform: state
+  to: ringing
+condition: []
+action:
+  - data_template:
+      data:
+        method: all
+        type: "{% if announcement_switch %}announce{% else %}tts{% endif %}"
+      message: >
+        "{% set name = state_attr(phone_entity, 'from_name') %}
+        {{ message_prefix }} {% if name == "unknown" %}{{ message_unknown }}{% else %}{{
+        name }}{% endif %} {{ message_suffix }}"
+      target: "{{ notify_entities.entity_id }}"
+    service: notify.alexa_media
+  - choose:
+    default: !input more_action
+
+mode: single
