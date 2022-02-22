@@ -18,12 +18,6 @@ blueprint:
         entity:
           #integration: fritzbox_callmonitor
           domain: sensor
-    announcement_switch:
-      name: Use Announcement instead of TTS
-      description: Announcements begin with a two-tone melody and will be silence when DnD mode is on. TTS on the other hand will not be impacted by DnD mode and will start immediately without the melody before.
-      selector:
-        boolean:
-      default: false
     message_prefix:
       name: Message Prefix
       description: Message that will be appended before the name of the caller
@@ -45,7 +39,6 @@ blueprint:
 
 variables:
   # This is the state of the person when it's in this zone.
-  announcement_switch: !input announcement_switch
   notify_entities: !input notify_entities
   phone_entity: !input phone_entity
   message_prefix: !input message_prefix
@@ -56,17 +49,17 @@ trigger:
   entity_id: !input phone_entity
   platform: state
   to: ringing
+  
 condition: []
 action:
   - data_template:
       data:
         method: all
-        type: "{% if announcement_switch %}announce{% else %}tts{% endif %}"
       message: >
         "{% set name = state_attr(phone_entity, 'from_name') %}
         {{ message_prefix }} {% if name == "unknown" %}{{ message_unknown }}{% else %}{{
         name }}{% endif %} {{ message_suffix }}"
-      target: "{{ notify_entities.entity_id }}"
+      target: "{{ notify_entities }}"
     service: tts.google_say
   - choose:
     default: !input more_action
