@@ -27,12 +27,6 @@ blueprint:
       name: Unknown text
       description: This is the text that will be said when no name is available (supressed or not in address book)
       default: "Unbekannt"
-    more_action:
-      name: More action
-      description: If you want Home Assistant to do something else, you can define a custom action here. This is optional.
-      default: []
-      selector:
-        action:
 
 variables:
   # This is the state of the person when it's in this zone.
@@ -49,11 +43,10 @@ trigger:
   
 condition: []
 action:
-  - data_template:
-      service: tts.google_cloud_say
+    - service: tts.google_cloud_say
       data:
-      entity_id: "{{ notify_entities }}"
-      message: >
+       entity_id: "{{ notify_entities }}"
+       message: >
         "{% set name = state_attr(phone_entity, 'from_name') %}
         {{ message_prefix }} {% if name == "unknown" %}{{ message_unknown }}{% else %}{{
         name }}{% endif %} {{ message_suffix }}"
