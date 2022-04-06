@@ -50,7 +50,5 @@ action:
         "{% set name = state_attr(phone_entity, 'from_name') %}
         {{ message_prefix }} {% if name == "unknown" %}{{ message_unknown }}{% else %}{{
         name }}{% endif %} {{ message_suffix }}"
-  - choose:
-    default: !input more_action
 
 mode: queued
