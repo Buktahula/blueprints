@@ -1,22 +1,19 @@
 blueprint:
-  name: Call Notification
-  description: Send an announcement/tts via Google when somebody calls the landline
+  name: Google Cast Call Notification
+  description: Send an announcement/tts (cloud) via Google when somebody calls the landline
   domain: automation
   input:
     notify_entities:
       name: Entities to notify
-      description: These must be media_player entities from the google_media custom integration.
+      description: These must be media_player entities from the google_cast integration.
       selector:
-        target:
           entity:
             domain: media_player
-            #integration: Google Cast
     phone_entity:
       name: Phone sensor
       description: This sensor must be from the fritzbox_callmonitor integration.
       selector:
         entity:
-          #integration: fritzbox_callmonitor
           domain: sensor
     message_prefix:
       name: Message Prefix
@@ -53,15 +50,14 @@ trigger:
 condition: []
 action:
   - data_template:
+      service: tts.google_cloud_say
       data:
-        method: all
+      entity_id: "{{ notify_entities }}"
       message: >
         "{% set name = state_attr(phone_entity, 'from_name') %}
         {{ message_prefix }} {% if name == "unknown" %}{{ message_unknown }}{% else %}{{
         name }}{% endif %} {{ message_suffix }}"
-      target: "{{ notify_entities }}"
-    service: tts.google_say
   - choose:
     default: !input more_action
 
-mode: single
+mode: queued
